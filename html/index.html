@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police MDT</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- MINI DISPATCH OVERLAY -->
+    <div id="miniDispatch">
+        <div class="md-label">DISPATCH FEED</div>
+        <div id="md-list"></div>
+        <div class="md-footer">
+            <div class="md-counter" id="md-counter"></div>
+            <div class="md-controls">[←/→] SCROLL&nbsp;&nbsp;[G] ASSIGN</div>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" style="display: none;">
+        <div class="login-left">
+            <div class="login-left-inner">
+                <div class="login-logo" id="loginLogo"></div>
+                <div class="login-dept">
+                    <div class="login-dept-line1" id="loginLine1">LOS SANTOS</div>
+                    <div class="login-dept-line2" id="loginLine2">POLICE DEPARTMENT</div>
+                    <div class="login-dept-motto" id="loginMotto">TO PROTECT AND TO SERVE</div>
+                </div>
+                <div class="login-left-divider"></div>
+                <div class="login-left-tag">MOBILE DATA TERMINAL</div>
+                <div class="login-left-sub">SECURE ACCESS SYSTEM v1.0</div>
+            </div>
+        </div>
+        <div class="login-right">
+            <div class="login-right-inner">
+                <div class="login-title">OFFICER AUTHENTICATION</div>
+                <div class="login-subtitle">AUTHORIZED PERSONNEL ONLY</div>
+                <div class="login-right-divider"></div>
+                <div class="login-info-row">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                    Verify your police credentials to access the MDT
+                </div>
+                <button id="loginBtn" onclick="attemptLogin()">LOGIN TO MDT</button>
+                <div id="loginError" class="login-error" style="display: none;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span id="loginErrorMsg">ACCESS DENIED — AUTHORIZED PERSONNEL ONLY</span>
+                </div>
+                <div class="login-footer">
+                    <span class="login-dot"></span> SECURE CONNECTION • ENCRYPTED
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN TABLET -->
+    <div id="tablet" style="display: none;">
+        <div id="toastContainer" class="toast-container"></div>
+        <!-- TOP BAR -->
+        <div id="topbar">
+            <div class="dept-identity">
+                <div class="dept-logo" id="deptLogo"></div>
+                <div class="dept-text">
+                    <div class="line1" id="deptLine1">LOS SANTOS</div>
+                    <div class="line2" id="deptLine2">POLICE DEPARTMENT</div>
+                    <div class="motto" id="deptMotto">TO PROTECT AND TO SERVE</div>
+                </div>
+            </div>
+            <div class="topbar-center">LSPD • MDT</div>
+            <div class="topbar-right">
+                <div>
+                    <div class="clock" id="clock">--:--</div>
+                    <div class="date-str" id="dateStr">-- --- ----</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT -->
+        <div id="main">
+            <!-- SIDEBAR -->
+            <div id="sidebar">
+                <div class="officer-card">
+                    <div class="officer-label">OFFICER</div>
+                    <div class="officer-name" id="officerName">Loading…</div>
+                    <div class="officer-id" id="officerBadge">#—</div>
+                    <div class="officer-label" style="margin-top: 10px;">GRADE</div>
+                    <div class="officer-status" id="officerJob">ON DUTY</div>
+
+                    <button class="search-btn" style="width: 100%; margin-top: 12px; font-size: 10px; background: #1e2d45;" onclick="takePortrait()">
+                        📷 UPDATE PORTRAIT
+                    </button>
+                </div>
+                <nav>
+                    <div class="nav-item active" data-page="dashboard">
+                        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                        Dashboard
+                    </div>
+                    <div class="nav-item" data-page="citizens">
+                        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        Citizens
+                    </div>
+                    <div class="nav-item" data-page="vehicles">
+                        <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+                        Vehicles
+                    </div>
+                    <div class="nav-item" data-page="reports">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                        Reports
+                    </div>
+                    <div class="nav-item" data-page="warrants">
+                        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                        Warrants
+                    </div>
+                    <div class="nav-item" data-page="bolos">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                        BOLOs
+                    </div>
+                    <div class="nav-item" data-page="evidence">
+                        <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+                        Evidence
+                    </div>
+                    <div class="nav-item" data-page="surveillance">
+                        <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM12 7c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg>
+                        Surveillance
+                    </div>
+                    <div class="nav-item" data-page="bodycam">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                        Bodycam
+                    </div>
+                    <div class="nav-item" data-page="dispatch">
+                        <svg viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                        Dispatch
+                    </div>
+                    <div class="nav-item" data-page="officers">
+                        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                        Officers
+                    </div>
+                    <div class="nav-item" data-page="settings">
+                        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                        Settings
+                    </div>
+                </nav>
+                <div class="sidebar-footer">
+                    <span>MDT 1.0.0</span>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div id="content">
+                <!-- DASHBOARD -->
+                <div id="page-dashboard" class="page active">
+                    <div class="page-header">
+                        <h1>DASHBOARD</h1>
+                        <p>Overview & Status</p>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+                            <div>
+                                <div class="stat-label">Active Warrants</div>
+                                <div class="stat-value" id="statActiveWarrants">—</div>
+                                <div class="stat-sub neutral">In database</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></div>
+                            <div>
+                                <div class="stat-label">Active BOLOs</div>
+                                <div class="stat-value" id="statActiveBOLOs">—</div>
+                                <div class="stat-sub neutral">In database</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+                            <div>
+                                <div class="stat-label">Units on Duty</div>
+                                <div class="stat-value" id="statUnitsOnDuty">—</div>
+                                <div class="stat-sub neutral">On duty now</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+                            <div>
+                                <div class="stat-label">Pending Reports</div>
+                                <div class="stat-value" id="statPendingReports">—</div>
+                                <div class="stat-sub warn">Requires approval</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lower-grid">
+                        <!-- RECENT ACTIVITY PANEL (Replaces Map) -->
+                        <div class="panel">
+                            <div class="panel-header">RECENT ACTIVITY</div>
+                            <div class="activity-list" id="recentActivityList" style="max-height: 260px; overflow-y: auto;">
+                                <div style="padding:18px; text-align:center; color:#566b80; font-size:11px;">Loading activity…</div>
+                            </div>
+                        </div>
+
+                        <!-- DISPATCH STATUS -->
+                        <div class="panel">
+                            <div class="panel-header">DISPATCH STATUS</div>
+                            <div class="dispatch-stats">
+                                <div class="dispatch-stat">
+                                    <div class="ds-label">Active Calls</div>
+                                    <div class="ds-value active-calls" id="statActiveCalls">—</div>
+                                </div>
+                                <div class="dispatch-stat">
+                                    <div class="ds-label">Unassigned</div>
+                                    <div class="ds-value unassigned" id="statUnassignedCalls">—</div>
+                                </div>
+                                <div class="dispatch-stat">
+                                    <div class="ds-label">Units On Duty</div>
+                                    <div class="ds-value yesterday" id="statUnitsOnDuty2">—</div>
+                                </div>
+                            </div>
+                            <div class="dispatch-channel">
+                                <div>
+                                    <div class="ch-label">Primary Channel</div>
+                                    <div class="ch-name" id="dispatchChannel">Loading…</div>
+                                </div>
+                                <div class="ch-online"><span class="status-dot"></span> ONLINE</div>
+                            </div>
+                            <div class="panel-header" style="border-top: 1px solid #1a2d45;">
+                                ON-DUTY OFFICERS
+                                <button class="panel-btn" onclick="document.querySelector('[data-page=\'officers\']').click()">VIEW ROSTER</button>
+                            </div>
+                            <div style="padding: 14px 18px; font-size: 11px; color: #566b80;">
+                                Live count pulled from server. Click <span style="color:#2a6496; cursor:pointer;" onclick="document.querySelector('[data-page=\'officers\']').click()">VIEW ROSTER</span> for full list.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QUICK ACTIONS -->
+                    <div class="quick-actions-panel">
+                        <div class="panel-header">QUICK ACTIONS</div>
+                        <div class="quick-actions-grid">
+                            <button class="qa-btn qa-warrant" onclick="document.querySelector('[data-page=\'warrants\']').click(); openNewWarrant();">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                                <span>New Warrant</span>
+                            </button>
+                            <button class="qa-btn qa-bolo" onclick="document.querySelector('[data-page=\'bolos\']').click(); openNewBOLO();">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                <span>New BOLO</span>
+                            </button>
+                            <button class="qa-btn qa-report" onclick="document.querySelector('[data-page=\'reports\']').click(); openNewReport();">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                <span>New Report</span>
+                            </button>
+                            <button class="qa-btn qa-citizen" onclick="document.querySelector('[data-page=\'citizens\']').click()">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                <span>Search Citizen</span>
+                            </button>
+                            <button class="qa-btn qa-vehicle" onclick="document.querySelector('[data-page=\'vehicles\']').click()">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+                                <span>Search Vehicle</span>
+                            </button>
+                            <button class="qa-btn qa-dispatch" onclick="document.querySelector('[data-page=\'dispatch\']').click()">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                                <span>View Dispatch</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CITIZENS -->
+                <div id="page-citizens" class="page">
+                    <div class="page-header">
+                        <h1>CITIZENS</h1>
+                        <p>Search & Manage Citizens</p>
+                    </div>
+                    <div class="search-row">
+                        <div style="position: relative; flex: 1;">
+                            <input type="text" id="citizenSearch" class="search-input" placeholder="Enter a name or ID to search..." oninput="handleCitizenSearch(this.value)">
+                            <div id="citizenSearchSuggestions" class="suggestions-box"></div>
+                        </div>
+                        <button class="search-btn" onclick="searchCitizens()">SEARCH</button>
+                    </div>
+                    <table class="mdt-table" id="citizenTable">
+                        <thead><tr><th>Name</th><th>DOB</th><th>Job</th><th>Status</th><th style="width:40px;"></th></tr></thead>
+                        <tbody id="citizenTbody"><tr><td colspan="5" style="color:#566b80;text-align:center;padding:18px;">Enter a name or ID to search.</td></tr></tbody>
+                    </table>
+
+                    <!-- CITIZEN PROFILE PANEL -->
+                    <div id="citizenProfile" class="citizen-profile" style="display:none;">
+                        <div class="cp-header">
+                            <div class="cp-title-row">
+                                <span class="cp-name" id="cpName">—</span>
+                                <span class="cp-status" id="cpStatusBadge"></span>
+                            </div>
+                            <button class="cp-close-btn" onclick="closeCitizenProfile()">✕ CLOSE</button>
+                        </div>
+
+                        <div class="cp-body">
+                            <!-- LEFT: Photo + core info + description -->
+                            <div class="cp-left">
+                                <div class="cp-mugshot-wrap">
+                                    <div class="cp-mugshot" id="cpMugshot">
+                                        <div class="cp-mugshot-placeholder">NO PHOTO ON FILE</div>
+                                    </div>
+                                </div>
+
+                                <div class="cp-info-grid">
+                                    <div class="cp-info-item"><span class="cp-info-label">DOB</span><span class="cp-info-value" id="cpDob">—</span></div>
+                                    <div class="cp-info-item"><span class="cp-info-label">JOB</span><span class="cp-info-value" id="cpJob">—</span></div>
+                                    <div class="cp-info-item"><span class="cp-info-label">WARRANTS</span><span class="cp-info-value" id="cpWarrantCount">—</span></div>
+                                    <div class="cp-info-item cp-info-wide"><span class="cp-info-label">ID</span><span class="cp-info-value" id="cpId">—</span></div>
+                                </div>
+
+                                <div class="cp-section-label">OFFICER NOTES</div>
+                                <textarea id="cpDescription" class="cp-textarea" placeholder="No notes on file. Click save to add."></textarea>
+                                <button class="search-btn cp-save-btn" onclick="saveCitizenDescription()">SAVE NOTES</button>
+                            </div>
+
+                            <!-- RIGHT: Vehicles, Reports, Warrants -->
+                            <div class="cp-right">
+                                <div class="cp-section">
+                                    <div class="cp-section-label">REGISTERED VEHICLES</div>
+                                    <div id="cpVehicles" class="cp-list-area">
+                                        <div class="cp-loading">Loading…</div>
+                                    </div>
+                                </div>
+
+                                <div class="cp-section">
+                                    <div class="cp-section-label">REPORTS INVOLVED IN</div>
+                                    <div id="cpReports" class="cp-list-area">
+                                        <div class="cp-loading">Loading…</div>
+                                    </div>
+                                </div>
+
+                                <div class="cp-section">
+                                    <div class="cp-section-label">WARRANTS</div>
+                                    <div id="cpWarrants" class="cp-list-area">
+                                        <div class="cp-loading">Loading…</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VEHICLES -->
+                <div id="page-vehicles" class="page">
+                    <div class="page-header">
+                        <h1>VEHICLES</h1>
+                        <p>Vehicle Registration Lookup</p>
+                    </div>
+                    <div class="search-row">
+                        <input type="text" id="vehicleSearch" class="search-input" placeholder="Enter a plate or owner name to search.">
+                        <button class="search-btn" onclick="searchVehicles()">SEARCH</button>
+                    </div>
+                    <table class="mdt-table">
+                        <thead><tr><th>Plate</th><th>Model</th><th>Color</th><th>Owner</th><th>Status</th></tr></thead>
+                        <tbody><tr><td colspan="5" style="color:#566b80;text-align:center;padding:18px;">Enter a plate or owner name to search.</td></tr></tbody>
+                    </table>
+                </div>
+
+                <!-- REPORTS -->
+                <div id="page-reports" class="page">
+                    <div class="page-header">
+                        <h1>REPORTS</h1>
+                        <p>Incident & Arrest Reports</p>
+                    </div>
+                    
+                    <!-- Report List View -->
+                    <div id="reportListView">
+                        <div class="search-row">
+                            <input type="text" id="reportSearch" class="search-input" placeholder="Search reports by officer, subject, or type…">
+                            <button class="search-btn" onclick="searchReports()">SEARCH</button>
+                            <button class="search-btn" style="background:#27ae60;" onclick="openNewReport()">+ NEW REPORT</button>
+                        </div>
+                        <table class="mdt-table">
+                            <thead><tr><th>Report #</th><th>Type</th><th>Title</th><th>Officer</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody><tr><td colspan="7" style="color:#566b80;text-align:center;padding:18px;">Loading…</td></tr></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Report Editor View -->
+                    <div id="reportEditorView" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <div>
+                                <button class="search-btn" style="background:#1e2d45; margin-right:10px;" onclick="backToReportList()">← BACK TO LIST</button>
+                                <span id="reportEditorTitle" style="font-size:16px; font-weight:700; color:#fff;">New Report</span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <select id="reportStatus" class="search-input" style="width:150px;">
+                                    <option value="OPEN">Open</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="CLOSED">Closed</option>
+                                    <option value="ARCHIVED">Archived</option>
+                                </select>
+                                <button class="search-btn" style="background:#27ae60;" onclick="saveReport()">SAVE REPORT</button>
+                            </div>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                            <!-- Left Column -->
+                            <div>
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">Report Details</div>
+                                    <div style="padding:18px;">
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Report Title</label>
+                                        <input type="text" id="reportTitle" class="search-input" style="width:100%; margin-bottom:14px;" placeholder="Enter a brief title for the report">
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Report Type</label>
+                                        <select id="reportType" class="search-input" style="width:100%; margin-bottom:14px;">
+                                            <option value="Incident Report">Incident Report</option>
+                                            <option value="Arrest Report">Arrest Report</option>
+                                            <option value="Traffic Stop">Traffic Stop</option>
+                                            <option value="Use of Force">Use of Force</option>
+                                            <option value="Search Warrant Execution">Search Warrant Execution</option>
+                                            <option value="Domestic Disturbance">Domestic Disturbance</option>
+                                            <option value="Burglary">Burglary</option>
+                                            <option value="Assault">Assault</option>
+                                            <option value="Theft">Theft</option>
+                                            <option value="Vandalism">Vandalism</option>
+                                        </select>
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Subject (Name or ID)</label>
+                                        <input type="text" id="reportSubject" class="search-input" style="width:100%; margin-bottom:14px;" placeholder="Subject name or citizen ID">
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Description / Details</label>
+                                        <textarea id="reportDetails" class="search-input" style="width:100%; height:200px; resize:vertical;" placeholder="Enter detailed description of the incident…"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="panel">
+                                    <div class="panel-header">
+                                        Charges
+                                        <button class="panel-btn" style="background:#27ae60; color:#fff; padding:4px 10px; border-radius:4px;" onclick="openChargesModal()">+ ADD CHARGES</button>
+                                    </div>
+                                    <div style="padding:18px;">
+                                        <textarea id="reportCharges" class="search-input" style="width:100%; height:120px; resize:vertical;" placeholder="List all applicable charges (one per line)…"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div>
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">Involved Officers</div>
+                                    <div style="padding:18px;">
+                                        <div style="position: relative; margin-bottom: 10px;">
+                                            <input type="text" id="officerInput" class="search-input" style="width:100%;" placeholder="Type to search officer..." oninput="handleNameSearch('officer', this.value)">
+                                            <div id="officerSuggestions" class="suggestions-box"></div>
+                                        </div>
+                                        <div id="officerList" style="max-height:150px; overflow-y:auto;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">Involved Citizens</div>
+                                    <div style="padding:18px;">
+                                        <div style="position: relative; margin-bottom: 10px;">
+                                            <input type="text" id="citizenInput" class="search-input" style="width:100%;" placeholder="Type to search citizen..." oninput="handleNameSearch('citizen', this.value)">
+                                            <div id="citizenSuggestions" class="suggestions-box"></div>
+                                        </div>
+                                        <div id="citizenList" style="max-height:150px; overflow-y:auto;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="panel">
+                                    <div class="panel-header">Evidence</div>
+                                    <div style="padding:18px;">
+                                        <div style="display:flex; gap:10px; margin-bottom:10px;">
+                                            <input type="text" id="evidenceInput" class="search-input" style="flex:1;" placeholder="Image URL or evidence link">
+                                            <button class="search-btn" style="background:#e67e22;" onclick="addEvidence()">ADD</button>
+                                        </div>
+                                        <div id="evidenceList" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; max-height:300px; overflow-y:auto;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WARRANTS -->
+                <div id="page-warrants" class="page">
+                    <div class="page-header">
+                        <h1>WARRANTS</h1>
+                        <p>Active & Historical Warrants</p>
+                    </div>
+                    
+                    <!-- Warrant List View -->
+                    <div id="warrantListView">
+                        <div class="search-row">
+                            <input type="text" id="warrantSearch" class="search-input" placeholder="Search warrants by subject, charge, or ID…">
+                            <select id="warrantStatusFilter" class="search-input" style="max-width: 150px;">
+                                <option value="">All Statuses</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="EXECUTED">Executed</option>
+                                <option value="EXPIRED">Expired</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                            <select id="warrantPriorityFilter" class="search-input" style="max-width: 150px;">
+                                <option value="">All Priorities</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                            <button class="search-btn" onclick="searchWarrants()">SEARCH</button>
+                            <button class="search-btn" style="background:#e74c3c;" onclick="openNewWarrant()">+ NEW WARRANT</button>
+                        </div>
+                        <table class="mdt-table">
+                            <thead><tr><th>Warrant #</th><th>Subject</th><th>Charge</th><th>Issued By</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody><tr><td colspan="7" style="color:#566b80;text-align:center;padding:18px;">Loading…</td></tr></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Warrant Editor View -->
+                    <div id="warrantEditorView" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <div>
+                                <button class="search-btn" style="background:#1e2d45; margin-right:10px;" onclick="backToWarrantList()">← BACK TO LIST</button>
+                                <span id="warrantEditorTitle" style="font-size:16px; font-weight:700; color:#fff;">New Warrant</span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <select id="warrantStatus" class="search-input" style="width:150px;">
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="EXECUTED">Executed</option>
+                                    <option value="EXPIRED">Expired</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                                <button class="search-btn" style="background:#e74c3c;" onclick="saveWarrant()">SAVE WARRANT</button>
+                            </div>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                            <div>
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">Subject Information</div>
+                                    <div style="padding:18px;">
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Subject Name</label>
+                                        <div style="position: relative; margin-bottom: 14px;">
+                                            <input type="text" id="warrantSubjectName" class="search-input" style="width:100%;" placeholder="Type to search citizen..." oninput="handleWarrantSubjectSearch(this.value)">
+                                            <div id="warrantSubjectSuggestions" class="suggestions-box"></div>
+                                        </div>
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Subject ID / Citizen ID</label>
+                                        <input type="text" id="warrantSubjectId" class="search-input" style="width:100%; margin-bottom:14px;" placeholder="Identifier">
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Priority</label>
+                                        <select id="warrantPriority" class="search-input" style="width:100%;">
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                            <option value="Critical">Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">
+                                        Charges
+                                        <button class="panel-btn" style="background:#27ae60; color:#fff; padding:4px 10px; border-radius:4px;" onclick="openChargesModal('warrantCharges')">+ ADD CHARGES</button>
+                                    </div>
+                                    <div style="padding:18px;">
+                                        <textarea id="warrantCharges" class="search-input" style="width:100%; height:120px; resize:vertical;" placeholder="List all applicable charges…"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="panel">
+                                    <div class="panel-header">Description / Reason</div>
+                                    <div style="padding:18px;">
+                                        <textarea id="warrantDescription" class="search-input" style="width:100%; height:150px; resize:vertical;" placeholder="Detailed reason for the warrant…"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOLOs -->
+                <div id="page-bolos" class="page">
+                    <div class="page-header">
+                        <h1>BOLOs</h1>
+                        <p>Be On the Lookout Alerts</p>
+                    </div>
+                    
+                    <!-- BOLO List View -->
+                    <div id="boloListView">
+                        <div class="search-row">
+                            <input type="text" id="boloSearch" class="search-input" placeholder="Search BOLOs by subject, description, or plate…">
+                            <select id="boloStatusFilter" class="search-input" style="max-width: 150px;">
+                                <option value="">All Statuses</option>
+                                <option value="ACTIVE">Active</option>
+                                <option value="EXPIRED">Expired</option>
+                                <option value="CANCELLED">Cancelled</option>
+                                <option value="RESOLVED">Resolved</option>
+                            </select>
+                            <select id="boloTypeFilter" class="search-input" style="max-width: 150px;">
+                                <option value="">All Types</option>
+                                <option value="person">Person</option>
+                                <option value="vehicle">Vehicle</option>
+                                <option value="weapon">Weapon</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <button class="search-btn" onclick="searchBOLOs()">SEARCH</button>
+                            <button class="search-btn" style="background:#e67e22;" onclick="openNewBOLO()">+ NEW BOLO</button>
+                        </div>
+                        <table class="mdt-table">
+                            <thead><tr><th>BOLO #</th><th>Type</th><th>Subject</th><th>Description</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody><tr><td colspan="7" style="color:#566b80;text-align:center;padding:18px;">Loading…</td></tr></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- BOLO Editor View -->
+                    <div id="boloEditorView" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <div>
+                                <button class="search-btn" style="background:#1e2d45; margin-right:10px;" onclick="backToBOLOList()">← BACK TO LIST</button>
+                                <span id="boloEditorTitle" style="font-size:16px; font-weight:700; color:#fff;">New BOLO</span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <select id="boloStatus" class="search-input" style="width:150px;">
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="EXPIRED">Expired</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                    <option value="RESOLVED">Resolved</option>
+                                </select>
+                                <button class="search-btn" style="background:#e67e22;" onclick="saveBOLO()">SAVE BOLO</button>
+                            </div>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                            <!-- Left Column -->
+                            <div>
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">BOLO Information</div>
+                                    <div style="padding:18px;">
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">BOLO Type</label>
+                                        <select id="boloType" class="search-input" style="width:100%; margin-bottom:14px;">
+                                            <option value="person">Person</option>
+                                            <option value="vehicle">Vehicle</option>
+                                            <option value="weapon">Weapon</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Subject / Target Name</label>
+                                        <input type="text" id="boloSubject" class="search-input" style="width:100%; margin-bottom:14px;" placeholder="Name, Plate, or Description">
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Priority</label>
+                                        <select id="boloPriority" class="search-input" style="width:100%; margin-bottom:14px;">
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                            <option value="Critical">Critical</option>
+                                        </select>
+
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Plate (If Vehicle)</label>
+                                        <input type="text" id="boloPlate" class="search-input" style="width:100%;" placeholder="License Plate">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div>
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">Description & Details</div>
+                                    <div style="padding:18px;">
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Description</label>
+                                        <textarea id="boloDescription" class="search-input" style="width:100%; height:120px; resize:vertical; margin-bottom:14px;" placeholder="Detailed description of the target…"></textarea>
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Last Seen Location</label>
+                                        <input type="text" id="boloLastSeen" class="search-input" style="width:100%; margin-bottom:14px;" placeholder="Location last seen">
+
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Image URL (Suspect/Vehicle)</label>
+                                        <input type="text" id="boloImage" class="search-input" style="width:100%;" placeholder="https://...">
+                                        <div id="boloImagePreview" style="margin-top:10px; max-height:150px; border-radius:4px; overflow:hidden; display:none;">
+                                            <img id="boloImagePreviewImg" src="" style="width:100%; height:100%; object-fit:cover;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EVIDENCE -->
+                <div id="page-evidence" class="page">
+                    <div class="page-header">
+                        <h1>EVIDENCE</h1>
+                        <p>Evidence Locker & Chain of Custody</p>
+                    </div>
+                    
+                    <!-- Evidence List View -->
+                    <div id="evidenceListView">
+                        <div class="search-row">
+                            <input type="text" id="evidenceSearch" class="search-input" placeholder="Search by locker #, perpetrator, or officer…">
+                            <button class="search-btn" onclick="searchEvidence()">SEARCH</button>
+                            <button class="search-btn" style="background:#8e44ad;" onclick="openNewEvidence()">+ NEW EVIDENCE</button>
+                        </div>
+                        <table class="mdt-table">
+                            <thead><tr><th>Locker #</th><th>Perpetrator</th><th>Officer</th><th>Notes</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody><tr><td colspan="6" style="color:#566b80;text-align:center;padding:18px;">Loading…</td></tr></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Evidence Editor View -->
+                    <div id="evidenceEditorView" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <div>
+                                <button class="search-btn" style="background:#1e2d45; margin-right:10px;" onclick="backToEvidenceList()">← BACK TO LIST</button>
+                                <span id="evidenceEditorTitle" style="font-size:16px; font-weight:700; color:#fff;">New Evidence Record</span>
+                            </div>
+                            <button class="search-btn" style="background:#8e44ad;" onclick="saveEvidence()">SAVE RECORD</button>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                            <!-- Left Column: Metadata -->
+                            <div>
+                                <div class="panel" style="margin-bottom:20px;">
+                                    <div class="panel-header">Locker Information</div>
+                                    <div style="padding:18px;">
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Locker Number</label>
+                                        <input type="number" id="evidenceLockerNumber" class="search-input" style="width:100%; margin-bottom:14px;" placeholder="e.g. 101">
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Perpetrator Name</label>
+                                        <div style="position: relative; margin-bottom: 14px;">
+                                            <input type="text" id="evidencePerpetrator" class="search-input" style="width:100%;" placeholder="Type to search citizen..." oninput="handleEvidenceNameSearch('perpetrator', this.value)">
+                                            <div id="evidencePerpetratorSuggestions" class="suggestions-box"></div>
+                                        </div>
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Officer Name</label>
+                                        <div style="position: relative; margin-bottom: 14px;">
+                                            <input type="text" id="evidenceOfficer" class="search-input" style="width:100%;" placeholder="Type to search officer..." oninput="handleEvidenceNameSearch('officer', this.value)">
+                                            <div id="evidenceOfficerSuggestions" class="suggestions-box"></div>
+                                        </div>
+                                        
+                                        <label style="font-size:10px; color:#566b80; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Notes / Chain of Custody</label>
+                                        <textarea id="evidenceNotes" class="search-input" style="width:100%; height:100px; resize:vertical;" placeholder="Additional notes…"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Items from ox_inventory -->
+                            <div>
+                                <div class="panel">
+                                    <div class="panel-header">Locker Contents <span id="lockerItemCount" style="color:#566b80; font-size:10px; margin-left:8px;">(0 items)</span></div>
+                                    <div id="evidenceItemsGrid" style="padding:18px; display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; max-height:400px; overflow-y:auto;">
+                                        <div style="grid-column: 1/-1; text-align:center; color:#566b80; font-size:11px; padding:20px;">Save the record to load locker contents from ox_inventory.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SURVEILLANCE -->
+                <div id="page-surveillance" class="page">
+                    <div class="page-header">
+                        <h1>SURVEILLANCE</h1>
+                        <p>Placed CCTV Cameras &amp; Live Feeds</p>
+                    </div>
+
+                    <div class="search-row">
+                        <input type="text" id="surveillanceSearch" class="search-input" placeholder="Search by camera name or officer…">
+                        <button class="search-btn" onclick="searchSurveillance()">SEARCH</button>
+                        <button class="search-btn" style="background:#e67e22;" onclick="placeCameraButton()">+ PLACE CAMERA</button>
+                    </div>
+
+                    <table class="mdt-table" id="surveillanceTable">
+                        <thead><tr><th>Name</th><th>Placed By</th><th>Date</th><th style="width:260px;">Actions</th></tr></thead>
+                        <tbody id="surveillanceTbody"><tr><td colspan="4" style="color:#566b80;text-align:center;padding:18px;">Loading…</td></tr></tbody>
+                    </table>
+                </div>
+
+                <!-- DISPATCH -->
+                <div id="page-dispatch" class="page">
+                    <div class="page-header">
+                        <h1>DISPATCH</h1>
+                        <p>Active Calls & Unit Assignment</p>
+                    </div>
+                    <div class="dispatch-toolbar">
+                        <button class="search-btn" onclick="refreshDispatch()">↻ REFRESH</button>
+                        <span class="dispatch-call-count" id="dispatchCallCount"></span>
+                    </div>
+                    <div class="dispatch-cards" id="dispatchCards">
+                        <div class="dispatch-empty">Loading…</div>
+                    </div>
+                </div>
+
+                <!-- OFFICERS -->
+                <div id="page-officers" class="page">
+                    <div class="page-header">
+                        <h1>OFFICERS</h1>
+                        <p>On-Duty Roster & Assignments</p>
+                    </div>
+                    <table class="mdt-table">
+                        <thead>
+                            <tr>
+                                <th>Server ID</th>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                                <th>Assignment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="officerRosterBody">
+                            <tr><td colspan="5" style="color:#566b80;text-align:center;padding:18px;">Loading roster…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- BODYCAM -->
+                <div id="page-bodycam" class="page">
+                    <div class="page-header">
+                        <h1>BODYCAM</h1>
+                        <p>Active Officer Body Camera Feeds</p>
+                    </div>
+                    <table class="mdt-table" id="bodycamTable">
+                        <thead><tr><th>Officer</th><th>Server ID</th><th>Status</th><th style="width:160px;">Actions</th></tr></thead>
+                        <tbody id="bodycamTbody"><tr><td colspan="4" style="color:#566b80;text-align:center;padding:18px;">No active bodycams.</td></tr></tbody>
+                    </table>
+                </div>
+
+                <!-- SETTINGS -->
+                <div id="page-settings" class="page">
+                    <div class="page-header">
+                        <h1>SETTINGS</h1>
+                        <p>Display & Interface Preferences</p>
+                    </div>
+                    
+                    <div class="panel" style="margin-bottom: 20px;">
+                        <div class="panel-header">Interface Scale</div>
+                        <div style="padding: 18px; display: flex; align-items: center; gap: 15px;">
+                            <button class="search-btn" id="scaleDownBtn" style="width: 40px; font-size: 16px;">-</button>
+                            <span id="scaleDisplay" style="font-size: 14px; font-weight: 700; color: var(--text-bright); min-width: 60px; text-align: center;">100%</span>
+                            <button class="search-btn" id="scaleUpBtn" style="width: 40px; font-size: 16px;">+</button>
+                            <button class="search-btn" id="scaleResetBtn" style="background: var(--text-muted); margin-left: 10px; font-size: 10px;">RESET</button>
+                        </div>
+                    </div>
+                    
+                    <div class="panel" style="margin-bottom: 20px;">
+                        <div class="panel-header">Notifications</div>
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-row-label">Dispatch Call Sound</div>
+                                <div class="settings-row-sub">Play a sound when a new dispatch call comes in</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="dispatchSoundToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="panel" style="margin-bottom: 20px;">
+                        <div class="panel-header">Mini Dispatch Position</div>
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-row-label">Reposition Overlay</div>
+                                <div class="settings-row-sub">Click, then drag the dispatch feed anywhere on screen and click again to save</div>
+                            </div>
+                            <button class="search-btn" id="dispatchPositionBtn" style="background:#2a6496; white-space:nowrap;">CHANGE POSITION</button>
+                        </div>
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-row-label">Reset Position</div>
+                                <div class="settings-row-sub">Restore the default left-center position</div>
+                            </div>
+                            <button class="search-btn" id="dispatchPositionResetBtn" style="background:#5a2020; white-space:nowrap;">RESET</button>
+                        </div>
+                    </div>
+
+                    <div class="panel" style="margin-bottom: 20px;">
+                        <div class="panel-header">Mini Dispatch Opacity</div>
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-row-label">Background Opacity</div>
+                                <div class="settings-row-sub">Controls how transparent the dispatch overlay background is</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <button class="search-btn" id="opacityDownBtn" style="padding:6px 12px;">−</button>
+                                <span id="opacityDisplay" style="min-width:40px; text-align:center; font-weight:700; font-size:13px; color:#c8d6e8;">50%</span>
+                                <button class="search-btn" id="opacityUpBtn" style="padding:6px 12px;">+</button>
+                                <button class="search-btn" id="opacityResetBtn" style="background:#1e2d45; white-space:nowrap; margin-left:4px;">RESET</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 15px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 6px;">
+                        <p style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+                            <strong style="color: var(--text-bright);">Note:</strong> Department branding (Name, Motto, Logo) can only be edited in the <code>config.lua</code> file. Changes require a resource restart.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="modalWarrant" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#0d1826; border:1px solid #1e2d45; border-radius:8px; width:400px; padding:24px;">
+            <div style="font-size:16px; font-weight:700; color:#fff; margin-bottom:16px; text-transform:uppercase;">Issue New Warrant</div>
+            <input type="text" id="wSubjectId" class="search-input" placeholder="Subject ID / Citizen ID" style="width:100%; margin-bottom:10px;">
+            <input type="text" id="wSubjectName" class="search-input" placeholder="Subject Full Name" style="width:100%; margin-bottom:10px;">
+            <input type="text" id="wCharge" class="search-input" placeholder="Charge" style="width:100%; margin-bottom:16px;">
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="search-btn" style="background:#1e2d45;" onclick="hideModal('modalWarrant')">CANCEL</button>
+                <button class="search-btn" style="background:#e74c3c;" onclick="submitWarrant()">ISSUE WARRANT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalBOLO" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#0d1826; border:1px solid #1e2d45; border-radius:8px; width:400px; padding:24px;">
+            <div style="font-size:16px; font-weight:700; color:#fff; margin-bottom:16px; text-transform:uppercase;">Issue New BOLO</div>
+            <select id="bType" class="search-input" style="width:100%; margin-bottom:10px;">
+                <option value="person">Person</option>
+                <option value="vehicle">Vehicle</option>
+                <option value="weapon">Weapon</option>
+                <option value="other">Other</option>
+            </select>
+            <textarea id="bDescription" class="search-input" placeholder="Description" style="width:100%; margin-bottom:10px; height:80px; resize:none;"></textarea>
+            <input type="text" id="bLastSeen" class="search-input" placeholder="Last Seen Location" style="width:100%; margin-bottom:10px;">
+            <input type="text" id="bPlate" class="search-input" placeholder="Plate (if vehicle)" style="width:100%; margin-bottom:16px;">
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="search-btn" style="background:#1e2d45;" onclick="hideModal('modalBOLO')">CANCEL</button>
+                <button class="search-btn" style="background:#e67e22;" onclick="submitBOLO()">ISSUE BOLO</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalReport" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#0d1826; border:1px solid #1e2d45; border-radius:8px; width:400px; padding:24px;">
+            <div style="font-size:16px; font-weight:700; color:#fff; margin-bottom:16px; text-transform:uppercase;">File New Report</div>
+            <select id="rType" class="search-input" style="width:100%; margin-bottom:10px;">
+                <option value="Incident Report">Incident Report</option>
+                <option value="Arrest Report">Arrest Report</option>
+                <option value="Traffic Stop">Traffic Stop</option>
+                <option value="Use of Force">Use of Force</option>
+                <option value="Search Warrant Execution">Search Warrant Execution</option>
+            </select>
+            <input type="text" id="rSubject" class="search-input" placeholder="Subject (name or ID)" style="width:100%; margin-bottom:10px;">
+            <textarea id="rDetails" class="search-input" placeholder="Details" style="width:100%; margin-bottom:16px; height:100px; resize:none;"></textarea>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="search-btn" style="background:#1e2d45;" onclick="hideModal('modalReport')">CANCEL</button>
+                <button class="search-btn" style="background:#2a6496;" onclick="submitReport()">FILE REPORT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARGES MODAL -->
+    <div id="modalCharges" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#0d1826; border:1px solid #1e2d45; border-radius:8px; width:600px; max-height:80vh; display:flex; flex-direction:column;">
+            <div style="padding:16px 20px; border-bottom:1px solid #1e2d45; display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:16px; font-weight:700; color:#fff; text-transform:uppercase;">Penal Code / Charges</div>
+                <button onclick="closeChargesModal()" style="background:none; border:none; color:#566b80; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding:16px 20px; border-bottom:1px solid #1e2d45;">
+                <input type="text" id="chargeSearchInput" class="search-input" style="width:100%;" placeholder="Search charges by name or code..." oninput="filterCharges()">
+            </div>
+            <div id="chargesListContainer" style="padding:10px 20px; overflow-y:auto; flex:1;">
+                <!-- Charges will be injected here -->
+            </div>
+            <div style="padding:16px 20px; border-top:1px solid #1e2d45; display:flex; justify-content:flex-end; gap:10px;">
+                <button class="search-btn" style="background:#1e2d45;" onclick="closeChargesModal()">CANCEL</button>
+                <button class="search-btn" style="background:#27ae60;" onclick="applySelectedCharges()">APPLY SELECTED</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- GENERIC CONFIRM MODAL -->
+    <div id="mdtConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:3500; align-items:center; justify-content:center;">
+        <div style="background:#0d1826; border:1px solid #1e2d45; border-radius:8px; width:360px;">
+            <div style="padding:18px 20px;">
+                <div id="mdtConfirmMessage" style="font-size:13px; color:#c8d6e8; line-height:1.5;">Are you sure?</div>
+            </div>
+            <div style="padding:0 20px 20px; display:flex; justify-content:flex-end; gap:10px;">
+                <button class="search-btn" style="background:#1e2d45;" onclick="_mdtConfirmResolve(false)">CANCEL</button>
+                <button class="search-btn" style="background:#e74c3c;" id="mdtConfirmOkBtn" onclick="_mdtConfirmResolve(true)">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CCTV CAMERA NAMING MODAL (works even if the tablet is closed) -->
+    <div id="cctvNameModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:3000; align-items:center; justify-content:center;">
+        <div style="background:#0d1826; border:1px solid #1e2d45; border-radius:8px; width:380px;">
+            <div style="padding:16px 20px; border-bottom:1px solid #1e2d45;">
+                <div id="cctvNameModalTitle" style="font-size:15px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.5px;">Name This Camera</div>
+                <div style="font-size:11px; color:#566b80; margin-top:4px;">Visible to all officers on the MDT.</div>
+            </div>
+            <div style="padding:20px;">
+                <input type="text" id="cctvNameInput" class="search-input" style="width:100%;" placeholder="e.g. Front Entrance, Back Alley…" maxlength="60">
+            </div>
+            <div style="padding:0 20px 20px; display:flex; justify-content:flex-end; gap:10px;">
+                <button class="search-btn" style="background:#1e2d45;" onclick="skipCameraName()">SKIP</button>
+                <button class="search-btn" style="background:#2a6496;" onclick="saveCameraName()">SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CCTV LIVE FEED OVERLAY -->
+    <div id="cctvFeedOverlay" style="display:none;">
+        <div class="cctv-scanlines"></div>
+        <div class="cctv-vignette"></div>
+        <div class="cctv-corner cctv-corner-tl">
+            <span class="cctv-rec-dot"></span>
+            <span id="cctvFeedName">CAMERA</span>
+        </div>
+        <div class="cctv-corner cctv-corner-tr" id="cctvFeedClock">00:00:00</div>
+        <button class="cctv-exit-btn" onclick="exitCameraView()">✕ EXIT FEED</button>
+        <div class="cctv-hint">WASD / ARROW KEYS TO PAN &amp; TILT</div>
+    </div>
+
+    <!-- BODYCAM LIVE FEED OVERLAY -->
+    <div id="bodycamFeedOverlay" style="display:none;">
+        <div class="bwc-scanlines"></div>
+        <div class="bwc-vignette"></div>
+        <div class="bwc-noise"></div>
+
+        <!-- Viewfinder corner brackets -->
+        <div class="bwc-bracket bwc-bracket-tl"></div>
+        <div class="bwc-bracket bwc-bracket-tr"></div>
+        <div class="bwc-bracket bwc-bracket-bl"></div>
+        <div class="bwc-bracket bwc-bracket-br"></div>
+
+        <!-- Top bar: REC indicator + timer / battery + date-time -->
+        <div class="bwc-top-bar">
+            <div class="bwc-rec-group">
+                <span class="bwc-rec-dot"></span>
+                <span class="bwc-rec-label">REC</span>
+                <span class="bwc-rec-timer" id="bodycamFeedTimer">00:00:00</span>
+            </div>
+            <div class="bwc-status-group">
+                <span class="bwc-battery">
+                    <span class="bwc-battery-icon"><span class="bwc-battery-fill"></span></span>
+                    <span id="bodycamBatteryPct">87%</span>
+                </span>
+                <span class="bwc-divider">|</span>
+                <span id="bodycamFeedClock">00:00:00</span>
+            </div>
+        </div>
+
+        <!-- Center focus reticle -->
+        <div class="bwc-reticle">
+            <span class="bwc-reticle-line bwc-reticle-h"></span>
+            <span class="bwc-reticle-line bwc-reticle-v"></span>
+        </div>
+
+        <!-- Bottom info bar: unit / officer / cam id -->
+        <div class="bwc-bottom-bar">
+            <div class="bwc-bottom-left">
+                <span class="bwc-cam-id">BWC-04</span>
+                <span class="bwc-divider">|</span>
+                <span id="bodycamFeedName">OFFICER</span>
+            </div>
+            <div class="bwc-bottom-right">
+                <span class="bwc-ts-line" id="bodycamTsDate">2026-06-21 14:32:09 -0800</span>
+                <span class="bwc-ts-line bwc-ts-serial" id="bodycamTsSerial">SCS BODY 3 X81517606</span>
+            </div>
+        </div>
+
+        <div class="bwc-hint">LIVE OFFICER POV — READ ONLY</div>
+        <button class="bwc-exit-btn" onclick="exitBodycamView()">✕ EXIT FEED</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
