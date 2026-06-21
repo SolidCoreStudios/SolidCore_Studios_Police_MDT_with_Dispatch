@@ -1,4 +1,4 @@
-# scs_pol_mdt — Police MDT
+# scs_pol_mdt — Police MDT + Dispatch
 **Author:** FlipperZeus | **Version:** 1.1 | **Framework:** ESX · QBCore · Qbox
 
 # For Support, Join Discord
