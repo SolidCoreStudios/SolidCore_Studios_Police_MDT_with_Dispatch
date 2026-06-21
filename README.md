@@ -2,7 +2,7 @@
 **Author:** FlipperZeus | **Version:** 1.1 | **Framework:** ESX · QBCore · Qbox
 
 # For Support, Join Discord
-SolidCoreStudios Discord: ['Discord'](https://discord.gg/frD69WsrrZ)
+SolidCoreStudios Discord: ['SolidCore Studios'](https://discord.gg/frD69WsrrZ)
 
 A full-featured Police Mobile Data Terminal for FiveM. Includes a login screen with job validation, live dashboard, citizen/vehicle/report/warrant/BOLO/evidence lookup, CCTV camera placement and live-feed viewing, bodycam streaming, a mugshot system, and a persistent mini-dispatch overlay — all in a single NUI resource.
 
